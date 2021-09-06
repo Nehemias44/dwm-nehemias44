@@ -25,11 +25,11 @@ static const int topbar = 1;
 static const char buttonbar[] = "  ";
 
 /* 0 means that dwm will calculate bar height, >= 1 means dwm will user_bh as bar height */
-static const int user_bh            = 25;
+static const int user_bh            = 30;
 
-static char font[]                  = "Ubuntu:style=Bold:size=10";
-static char dmenufont[]             = "Iosevka Nerd Font:size=12";
-static const char *fonts[]          = { font, "Font Awesome 6 Free Solid:pixelsize=12", "siji:pixelsize=26", };
+static char font[]                  = "Sarasa Term J:size=12";
+static char dmenufont[]             = "Sarasa Term J:size=14";
+static const char *fonts[]          = { font, "Font Awesome 6 Free Solid:pixelsize=12", "siji:style=Medium:size=28", };
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";
@@ -44,13 +44,13 @@ static char *colors[][3] = {
 static const char *const autostart[] = {
 	"xset", "-b", NULL,
 	"xsetroot", "-cursor_name", "left_ptr", NULL,
-	"xbacklight", "-set", "20", NULL,
+	"xbacklight", "-set", "45", NULL,
 	"xrdb", "-merge", "$HOME/.Xresources", NULL,	
 	"sh", "-c", "$HOME/.fehbg", NULL,
 	"picom", "--experimental-backends", NULL,
 	"dwmstatus", NULL,
 	"mpd", NULL,
-    "emacs", "--daemon", NULL,
+        "emacs", "--daemon", NULL,
 	NULL /* terminate */
 };
 
@@ -202,7 +202,7 @@ static Keychord keychords[] = {
 	
 	{ 1, {{MOD|SHIFT,         XK_q}},      quit,           {0} },
 
-	{ 1, {{MOD,           XK_Print}},  spawn,          SHCMD("scrot '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
+	{ 1, {{MOD,           XK_Print}},      spawn,          SHCMD("scrot '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
 	{ 1, {{MOD|SHIFT,	  XK_Print}},  spawn,          SHCMD("scrot -s '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
 	{ 1, {{MOD|SHIFT,	  XK_r}},      spawn,          SHCMD("st -g 80x24+200+200 -e ranger") },
 	{ 1, {{MOD|SHIFT,	  XK_n}},      spawn,          SHCMD("st -g 80x24+200+200 -e ncmpcpp") },
