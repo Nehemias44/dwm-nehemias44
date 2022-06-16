@@ -25,7 +25,7 @@ static const int topbar             = 1;
 static const int user_bh            = 25;
 
 static char font[]                  = "Sarasa Term J:style=Bold:size=8";
-static char dmenufont[]             = "monospace:size=10";
+static char dmenufont[]             = "Iosevka Nerd Font:size=10";
 static const char *fonts[]          = { font, "Font Awesome 6 Free Solid:pixelsize=10" };
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
@@ -56,8 +56,7 @@ static const char *tags[] = { "", "",  "",  "", "",  "",  "
 static const Rule rules[] = {
 	/* xprop(1):
 	 *	WM_CLASS(STRING) = instance, class
-	 *	WM_NAME(STRING) = title
-	 */
+	 *	WM_NAME(STRING) = title	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	{ "firefox",  NULL,       NULL,       1 << 3,       0,           -1 },
@@ -98,7 +97,13 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", NULL };
+static const char *dmenucmd[] = { "dmenu_run",
+				  "-fn", dmenufont,
+				  "-nb", normbgcolor,
+				  "-nf", normfgcolor,
+				  "-sb", selfgcolor,
+				  "-sf", selbgcolor,
+				  NULL };
 static const char *termcmd[] = {"st", "-g", "80x24+200+200", NULL};
 
 /*
@@ -119,7 +124,7 @@ ResourcePref resources[] = {
               { "topbar",             INTEGER, &topbar },
               { "nmaster",            INTEGER, &nmaster },
               { "resizehints",        INTEGER, &resizehints },
-              { "mfact",                      FLOAT,   &mfact },
+              { "mfact",              FLOAT,   &mfact },
 };
 
 #include <X11/XF86keysym.h>
@@ -210,7 +215,7 @@ static Key keys[] = {
 	{ 0,MonBrightnessDown,       spawn,          SHCMD("xbacklight -dec 5") },
 	{ 0,MonBrightnessUp,         spawn,          SHCMD("xbacklight -inc 5") },
 	{ 0,AudioPlay,               spawn,          SHCMD("mpc toggle") },
-	{ 0,AudioStop,               spawn,          SHCMD("mpc play") },
+	{ 0,AudioStop,               spawn,          SHCMD("mpc stop") },
 	{ 0,AudioPrev,               spawn,          SHCMD("mpc prev") },
 	{ 0,AudioNext,               spawn,          SHCMD("mpc next") },
 
