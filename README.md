@@ -1,7 +1,7 @@
 # DWM - dynamic window manager
 dwm is an extremely fast, small, and dynamic window manager for X.
 
-##Details
+## Details
 DWM repository with the following patches applied.
 
 - Restartsig
