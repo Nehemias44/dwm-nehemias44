@@ -14,12 +14,10 @@ DWM repository with the following patches applied.
 - Status2d
 
 ## Requirements
-------------
 In order to build dwm you need the Xlib header files.
 
 
 ## Installation
-------------
 Edit config.mk to match your local setup (dwm is installed into
 the /usr/local namespace by default).
 
@@ -30,7 +28,6 @@ necessary as root):
 
 
 ## Running dwm
------------
 Add the following line to your .xinitrc to start dwm using startx:
 
     exec dwm
@@ -53,6 +50,5 @@ like this in your .xinitrc:
 
 
 ## Configuration
--------------
 The configuration of dwm is done by creating a custom config.h
 and (re)compiling the source code.
