@@ -80,7 +80,7 @@ enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
 enum { Manager, Xembed, XembedInfo, XLast }; /* Xembed atoms */
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms */
-enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
+enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkButton, ClkWinTitle,
        ClkClientWin, ClkRootWin, ClkLast }; /* clicks */
 
 typedef union {
@@ -119,9 +119,14 @@ struct Client {
 typedef struct {
 	unsigned int mod;
 	KeySym keysym;
+} Key;
+
+typedef struct {
+	unsigned int n;
+	const Key keys[5];
 	void (*func)(const Arg *);
 	const Arg arg;
-} Key;
+} Keychord;
 
 typedef struct {
 	const char * sig;
@@ -259,6 +264,8 @@ static void setup(void);
 static void seturgent(Client *c, int urg);
 static void showhide(Client *c);
 static void sigchld(int unused);
+static void sighup(int unused);
+static void sigterm(int unused);
 static void spawn(const Arg *arg);
 static Monitor *systraytomon(Monitor *m);
 static void tag(const Arg *arg);
@@ -325,6 +332,7 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 	[UnmapNotify] = unmapnotify
 };
 static Atom wmatom[WMLast], netatom[NetLast], xatom[XLast];
+static int restart = 0;
 static int running = 1;
 static Cur *cursor[CurLast];
 static Clr **scheme;
@@ -332,6 +340,7 @@ static Display *dpy;
 static Drw *drw;
 static Monitor *mons, *selmon;
 static Window root, wmcheckwin;
+unsigned int currentkey = 0;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -533,18 +542,23 @@ buttonpress(XEvent *e)
 	}
 	if (ev->window == selmon->barwin) {
 		i = x = 0;
-		do
-			x += TEXTW(tags[i]);
-		while (ev->x >= x && ++i < LENGTH(tags));
-		if (i < LENGTH(tags)) {
-			click = ClkTagBar;
-			arg.ui = 1 << i;
-		} else if (ev->x < x + blw)
-			click = ClkLtSymbol;
-       		else if (ev->x > selmon->ww - (int)TEXTW(stext) - getsystraywidth())
-			click = ClkStatusText;
-		else
-			click = ClkWinTitle;
+		x += TEXTW(buttonbar);
+		if(ev->x < x) {
+			click = ClkButton;
+		} else {
+			do
+				x += TEXTW(tags[i]);
+			while (ev->x >= x && ++i < LENGTH(tags));
+			if (i < LENGTH(tags)) {
+				click = ClkTagBar;
+				arg.ui = 1 << i;
+			} else if (ev->x < x + blw)
+				click = ClkLtSymbol;
+			else if (ev->x > selmon->ww - TEXTW(stext))
+				click = ClkStatusText;
+			else
+				click = ClkWinTitle;
+		}
 	} else if ((c = wintoclient(ev->window))) {
 		focus(c);
 		restack(selmon);
@@ -1009,6 +1023,9 @@ drawbar(Monitor *m)
 			urg |= c->tags;
 	}
 	x = 0;
+	w = blw = TEXTW(buttonbar);
+	drw_setscheme(drw, scheme[SchemeNorm]);
+	x = drw_text(drw, x, 0, w, bh, lrpad / 2, buttonbar, 0);
 	for (i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
@@ -1266,16 +1283,16 @@ grabkeys(void)
 {
 	updatenumlockmask();
 	{
-		unsigned int i, j;
+		unsigned int i, k;
 		unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask|LockMask };
 		KeyCode code;
 
 		XUngrabKey(dpy, AnyKey, AnyModifier, root);
-		for (i = 0; i < LENGTH(keys); i++)
-			if ((code = XKeysymToKeycode(dpy, keys[i].keysym)))
-				for (j = 0; j < LENGTH(modifiers); j++)
-					XGrabKey(dpy, code, keys[i].mod | modifiers[j], root,
-						True, GrabModeAsync, GrabModeAsync);
+		for (i = 0; i < LENGTH(keychords); i++)
+			if ((code = XKeysymToKeycode(dpy, keychords[i].keys[currentkey].keysym)))
+				for (k = 0; k < LENGTH(modifiers); k++)
+					XGrabKey(dpy, code, keychords[i].keys[currentkey].mod | modifiers[k], root,
+							 True, GrabModeAsync, GrabModeAsync);
 	}
 }
 
@@ -1301,17 +1318,48 @@ isuniquegeom(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info)
 void
 keypress(XEvent *e)
 {
-	unsigned int i;
+	XEvent event = *e;
+	Keychord *keychord;
+	unsigned int ran = 0;
 	KeySym keysym;
 	XKeyEvent *ev;
+	Keychord *newoptions;
+	Keychord *oldoptions = (Keychord *)malloc(sizeof(keychords));
 
-	ev = &e->xkey;
-	keysym = XKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0);
-	for (i = 0; i < LENGTH(keys); i++)
-		if (keysym == keys[i].keysym
-		&& CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)
-		&& keys[i].func)
-			keys[i].func(&(keys[i].arg));
+	memcpy(oldoptions, keychords, sizeof(keychords));
+	size_t numoption = 0;
+	while(!ran){
+		ev = &event.xkey;
+		keysym = XKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0);
+		newoptions = (Keychord *)malloc(0);
+		numoption = 0;
+		for (keychord = oldoptions; keychord->n != 0 && currentkey < 5; keychord = (Keychord *)((char *)keychord + sizeof(Keychord))){
+			if(keysym == keychord->keys[currentkey].keysym
+			   && CLEANMASK(keychord->keys[currentkey].mod) == CLEANMASK(ev->state)
+			   && keychord->func){
+				if(keychord->n == currentkey +1){
+					keychord->func(&(keychord->arg));
+					ran = 1;
+				}else{
+					numoption++;
+					newoptions = (Keychord *)realloc(newoptions, numoption * sizeof(Keychord));
+					memcpy((char *)newoptions + (numoption -1) * sizeof(Keychord),keychord, sizeof(Keychord));
+				}
+			}
+		}
+		currentkey++;
+		if(numoption == 0)
+			break;
+		grabkeys();
+		while (running && !XNextEvent(dpy, &event) && !ran)
+			if(event.type == KeyPress)
+				break;
+		free(oldoptions);
+		oldoptions = newoptions;
+	}
+	free(newoptions);
+	currentkey = 0;
+	grabkeys();
 }
 
 int
@@ -1794,6 +1842,7 @@ quit(const Arg *arg)
 		}
 	}
 
+	if(arg->i) restart = 1;
 	running = 0;
 }
 
@@ -2136,6 +2185,9 @@ setup(void)
 	/* clean up any zombies immediately */
 	sigchld(0);
 
+	signal(SIGHUP, sighup);
+	signal(SIGTERM, sigterm);
+
 	/* init screen */
 	screen = DefaultScreen(dpy);
 	sw = DisplayWidth(dpy, screen);
@@ -2260,6 +2312,20 @@ sigchld(int unused)
 		}
 
 	}
+}
+
+void
+sighup(int unused)
+{
+	Arg a = {.i = 1};
+	quit(&a);
+}
+
+void
+sigterm(int unused)
+{
+	Arg a = {.i = 0};
+	quit(&a);
 }
 
 void
@@ -3109,6 +3175,7 @@ main(int argc, char *argv[])
 #endif /* __OpenBSD__ */
 	scan();
 	run();
+	if(restart) execvp(argv[0], argv);
 	cleanup();
 	XCloseDisplay(dpy);
 	return EXIT_SUCCESS;
