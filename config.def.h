@@ -4,7 +4,7 @@
  /* border pixel of windows */
 static const unsigned int borderpx  = 0;
 /* gaps between windows */
-static const unsigned int gappx     = 13;
+static const unsigned int gappx     = 20;
 /* snap pixel */
 static const unsigned int snap      = 32;
 /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
@@ -20,13 +20,15 @@ static const int showsystray        = 1;
 /* 0 means no bar */
 static const int showbar            = 1;
 /* 0 means bottom bar */
-static const int topbar             = 1;
-/* 0 means that dwm will calculate bar height, >= 1 means dwm will user_bh as bar height */
-static const int user_bh            = 25;
+static const int topbar = 1;
 
-static char font[]                  = "Sarasa Term J:style=Bold:size=8";
-static char dmenufont[]             = "monospace:size=10";
-static const char *fonts[]          = { font, "Font Awesome 6 Free Solid:pixelsize=10" };
+static const char buttonbar[] = "  ";
+/* 0 means that dwm will calculate bar height, >= 1 means dwm will user_bh as bar height */
+static const int user_bh            = 30;
+
+static char font[]                  = "SF Pro:style=Bold:size=10";
+static char dmenufont[]             = "Sarasa Term J:size=12";
+static const char *fonts[]          = { font, "Font Awesome 5 Free Solid:pixelsize=12", "siji:style=Medium:size=24"};
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";
@@ -41,17 +43,17 @@ static char *colors[][3] = {
 static const char *const autostart[] = {
 	"xset", "-b", NULL,
 	"xsetroot", "-cursor_name", "left_ptr", NULL,
-	"xbacklight", "-set", "30", NULL,
 	"xrdb", "-merge", "$HOME/.Xresources", NULL,	
 	"sh", "-c", "$HOME/.fehbg", NULL,
 	"picom", "--experimental-backends", NULL,
 	"dwmstatus", NULL,
 	"mpd", NULL,
+	"emacs", "--daemon", NULL,
 	NULL /* terminate */
 };
 
 /* tagging */
-static const char *tags[] = { "", "",  "",  "", "",  "",  "",  "",  ""};
+static const char *tags[] = { "main", "term",  "file",  "www", "edit",  "offi",  "chat",  "musc",  "vids"};
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -59,10 +61,13 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ "firefox",  NULL,       NULL,       1 << 3,       0,           -1 },
-	{ "eww-bar",  NULL,       NULL,       0,            1,           -1 },
+	{ "Firefox",  NULL,       NULL,       1 << 3,       0,           -1 },
+	{ "TelegramDesktop",  NULL,NULL,      1 << 6,            1,           -1 },
 	{ "mpv",      NULL,       NULL,       0,            1,           -1 },
-	//	{ "Emacs",    NULL,       NULL,       0,            1,           -1 },
+	{ "PacketTracer" , NULL,  NULL,       0,            1,           -1 },
+	{ "Zathura",  NULL,       NULL,       0,            1,           -1 },
+	{ "Emacs",    NULL,       NULL,       1 << 4,       1,           -1 },
+	//	{ "org.wezfurlong.wezterm", NULL, NULL, 0, 1, -1},
 };
 
 /* layout(s) */
@@ -87,18 +92,24 @@ static const Layout layouts[] = {
 #define SHIFT  ShiftMask
 
 #define TAGKEYS(KEY,TAG) \
-	{ MOD,             KEY,    view,           {.ui = 1 << TAG} }, \
-	{ MOD|CTRL,        KEY,    toggleview,     {.ui = 1 << TAG} }, \
-	{ MOD|SHIFT,       KEY,    tag,            {.ui = 1 << TAG} }, \
-	{ MOD|CTRL|SHIFT,  KEY,    toggletag,      {.ui = 1 << TAG} },
+	{ 1, {{MOD,             KEY}},    view,           {.ui = 1 << TAG} }, \
+	{ 1, {{MOD|CTRL,        KEY}},    toggleview,     {.ui = 1 << TAG} }, \
+	{ 1, {{MOD|SHIFT,       KEY}},    tag,            {.ui = 1 << TAG} }, \
+	{ 1, {{MOD|CTRL|SHIFT,  KEY}},    toggletag,      {.ui = 1 << TAG} },
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
 /* commands */
+static const char *termcmd[] = { "st", "-g", "98x24+200+200" , NULL };
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", NULL };
-static const char *termcmd[] = {"st", "-g", "80x24+200+200", NULL};
+static const char *dmenucmd[] = { "dmenu_run",
+				  "-fn", dmenufont,
+				  "-nb", normbgcolor,
+				  "-nf", normfgcolor,
+				  "-sb", selfgcolor,
+				  "-sf", selbgcolor,
+				  NULL };
 
 /*
  * Xresources preferences to load at startup
@@ -118,7 +129,7 @@ ResourcePref resources[] = {
               { "topbar",             INTEGER, &topbar },
               { "nmaster",            INTEGER, &nmaster },
               { "resizehints",        INTEGER, &resizehints },
-              { "mfact",                      FLOAT,   &mfact },
+              { "mfact",              FLOAT,   &mfact },
 };
 
 #include <X11/XF86keysym.h>
@@ -134,51 +145,51 @@ ResourcePref resources[] = {
 #define AudioPrev         XF86XK_AudioPrev        	
 #define AudioNext         XF86XK_AudioNext
 
-static Key keys[] = {
+static Keychord keychords[] = {
        /* modifier        key        function        argument */
-	{ MOD,            XK_p,      spawn,          {.v = dmenucmd }},
-	{ MOD|SHIFT,      XK_Return, spawn,          {.v = termcmd }},
-	{ MOD,            XK_b,      togglebar,      {0}},
-	{ MOD,            XK_j,      focusstack,     {.i = +1 } },	
-	{ MOD,            XK_k,      focusstack,     {.i = -1 } },
-	{ MOD,            XK_i,      incnmaster,     {.i = +1 } },
-	{ MOD,            XK_d,      incnmaster,     {.i = -1 } },
-	{ MOD,            XK_h,      setmfact,       {.f = -0.05} },
-	{ MOD,            XK_l,      setmfact,       {.f = +0.05} },
-	{ MOD,            XK_Return, zoom,           {0} },
-	{ MOD,            XK_Tab,    view,           {0} },
-	{ MOD|SHIFT,      XK_c,      killclient,     {0} },
-	{ MOD,            XK_t,      setlayout,      {.v = &layouts[0]} },
-	{ MOD,            XK_f,      setlayout,      {.v = &layouts[1]} },
-	{ MOD,            XK_m,      setlayout,      {.v = &layouts[2]} },
-	{ MOD,            XK_c,      setlayout,      {.v = &layouts[3]} },	
-	{ MOD,            XK_space,  setlayout,      {0} },
-	{ MOD|SHIFT,      XK_space,  togglefloating, {0} },
-	{ MOD,            XK_Down,   moveresize,     {.v = "0x 25y 0w 0h" } },
-	{ MOD,            XK_Up,     moveresize,     {.v = "0x -25y 0w 0h" } },
-	{ MOD,            XK_Right,  moveresize,     {.v = "25x 0y 0w 0h" } },
-	{ MOD,            XK_Left,   moveresize,     {.v = "-25x 0y 0w 0h" } },
-	{ MOD|SHIFT,      XK_Down,   moveresize,     {.v = "0x 0y 0w 25h" } },
-	{ MOD|SHIFT,      XK_Up,     moveresize,     {.v = "0x 0y 0w -25h" } },
-	{ MOD|SHIFT,      XK_Right,  moveresize,     {.v = "0x 0y 25w 0h" } },
-	{ MOD|SHIFT,      XK_Left,   moveresize,     {.v = "0x 0y -25w 0h" } },
-	{ MOD|CTRL,       XK_Up,     moveresizeedge, {.v = "t"} },
-	{ MOD|CTRL,       XK_Down,   moveresizeedge, {.v = "b"} },
-	{ MOD|CTRL,       XK_Left,   moveresizeedge, {.v = "l"} },
-	{ MOD|CTRL,       XK_Right,  moveresizeedge, {.v = "r"} },
-	{ MOD|CTRL|SHIFT, XK_Up,     moveresizeedge, {.v = "T"} },
-	{ MOD|CTRL|SHIFT, XK_Down,   moveresizeedge, {.v = "B"} },
-	{ MOD|CTRL|SHIFT, XK_Left,   moveresizeedge, {.v = "L"} },
-	{ MOD|CTRL|SHIFT, XK_Right,  moveresizeedge, {.v = "R"} },
-	{ MOD,            XK_0,      view,           {.ui = ~0 } },
-	{ MOD|SHIFT,      XK_0,      tag,            {.ui = ~0 } },
-	{ MOD,            XK_comma,  focusmon,       {.i = -1 } },
-	{ MOD,            XK_period, focusmon,       {.i = +1 } },
-	{ MOD|SHIFT,      XK_comma,  tagmon,         {.i = -1 } },
-	{ MOD|SHIFT,      XK_period, tagmon,         {.i = +1 } },
-	{ MOD,            XK_minus,  setgaps,        {.i = -1 } },
-	{ MOD,            XK_equal,  setgaps,        {.i = +1 } },
-	{ MOD|SHIFT,      XK_equal,  setgaps,        {.i = 0  } },
+	{ 1, {{MOD,            XK_p     }}, spawn,          {.v = dmenucmd }},
+	{ 1, {{MOD|SHIFT,      XK_Return}}, spawn,          {.v = termcmd }},
+	{ 1, {{MOD,            XK_b     }}, togglebar,      {0}},
+	{ 1, {{MOD,            XK_j     }}, focusstack,     {.i = +1 } },	
+	{ 1, {{MOD,            XK_k     }}, focusstack,     {.i = -1 } },
+	{ 1, {{MOD,            XK_i     }}, incnmaster,     {.i = +1 } },
+	{ 1, {{MOD,            XK_d     }}, incnmaster,     {.i = -1 } },
+	{ 1, {{MOD,            XK_h     }}, setmfact,       {.f = -0.05} },
+	{ 1, {{MOD,            XK_l     }}, setmfact,       {.f = +0.05} },
+	{ 1, {{MOD,            XK_Return}}, zoom,           {0} },
+	{ 1, {{MOD,            XK_Tab   }}, view,           {0} },
+	{ 1, {{MOD|SHIFT,      XK_c     }}, killclient,     {0} },
+	{ 1, {{MOD,            XK_t     }}, setlayout,      {.v = &layouts[0]} },
+	{ 1, {{MOD,            XK_f     }}, setlayout,      {.v = &layouts[1]} },
+	{ 1, {{MOD,            XK_m     }}, setlayout,      {.v = &layouts[2]} },
+	{ 1, {{MOD,            XK_c     }}, setlayout,      {.v = &layouts[3]} },	
+	{ 1, {{MOD,            XK_space }}, setlayout,      {0} },
+	{ 1, {{MOD|SHIFT,      XK_space }}, togglefloating, {0} },
+	{ 1, {{MOD,            XK_Down  }}, moveresize,     {.v = "0x 25y 0w 0h" } },
+	{ 1, {{MOD,            XK_Up    }}, moveresize,     {.v = "0x -25y 0w 0h" } },
+	{ 1, {{MOD,            XK_Right }}, moveresize,     {.v = "25x 0y 0w 0h" } },
+	{ 1, {{MOD,            XK_Left  }}, moveresize,     {.v = "-25x 0y 0w 0h" } },
+	{ 1, {{MOD|SHIFT,      XK_Down  }}, moveresize,     {.v = "0x 0y 0w 25h" } },
+	{ 1, {{MOD|SHIFT,      XK_Up    }}, moveresize,     {.v = "0x 0y 0w -25h" } },
+	{ 1, {{MOD|SHIFT,      XK_Right }}, moveresize,     {.v = "0x 0y 25w 0h" } },
+	{ 1, {{MOD|SHIFT,      XK_Left  }}, moveresize,     {.v = "0x 0y -25w 0h" } },
+	{ 1, {{MOD|CTRL,       XK_Up    }}, moveresizeedge, {.v = "t"} },
+	{ 1, {{MOD|CTRL,       XK_Down  }}, moveresizeedge, {.v = "b"} },
+	{ 1, {{MOD|CTRL,       XK_Left  }}, moveresizeedge, {.v = "l"} },
+	{ 1, {{MOD|CTRL,       XK_Right }}, moveresizeedge, {.v = "r"} },
+	{ 1, {{MOD|CTRL|SHIFT, XK_Up    }}, moveresizeedge, {.v = "T"} },
+	{ 1, {{MOD|CTRL|SHIFT, XK_Down  }}, moveresizeedge, {.v = "B"} },
+	{ 1, {{MOD|CTRL|SHIFT, XK_Left  }}, moveresizeedge, {.v = "L"} },
+	{ 1, {{MOD|CTRL|SHIFT, XK_Right }}, moveresizeedge, {.v = "R"} },
+	{ 1, {{MOD,            XK_0     }}, view,           {.ui = ~0 } },
+	{ 1, {{MOD|SHIFT,      XK_0     }}, tag,            {.ui = ~0 } },
+	{ 1, {{MOD,            XK_comma }}, focusmon,       {.i = -1 } },
+	{ 1, {{MOD,            XK_period}}, focusmon,       {.i = +1 } },
+	{ 1, {{MOD|SHIFT,      XK_comma }}, tagmon,         {.i = -1 } },
+	{ 1, {{MOD|SHIFT,      XK_period}}, tagmon,         {.i = +1 } },
+	{ 1, {{MOD,            XK_minus }}, setgaps,        {.i = -1 } },
+	{ 1, {{MOD,            XK_equal }}, setgaps,        {.i = +1 } },
+	{ 1, {{MOD|SHIFT,      XK_equal }}, setgaps,        {.i = 0  } },
 	
 	TAGKEYS(          XK_1,                      0)
 	TAGKEYS(          XK_2,                      1)
@@ -190,36 +201,27 @@ static Key keys[] = {
 	TAGKEYS(          XK_8,                      7)
 	TAGKEYS(          XK_9,                      8)
 	
-	{ MOD|SHIFT,      XK_q,      quit,           {0} },
+	{ 1, {{MOD|SHIFT,      XK_q      }}, quit,     {0} },
+	{ 1, {{MOD|CTRL|SHIFT, XK_q      }}, quit,     {1} },
+	{ 1, {{MOD,            XK_Print  }}, spawn, SHCMD("scrot '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
+	{ 1, {{MOD|SHIFT,      XK_Print  }}, spawn, SHCMD("scrot -s '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
+	{ 1, {{MOD|SHIFT,      XK_v      }}, spawn, SHCMD("st -g 80x24+200+200 -e nvim") },
+	{ 1, {{MOD|SHIFT,      XK_r      }}, spawn, SHCMD("st -g 80x24+200+200 -e ranger") },
+	{ 1, {{MOD|SHIFT,      XK_n      }}, spawn, SHCMD("st -g 80x24+200+200 -e ncmpcpp") },
+	{ 1, {{MOD|SHIFT,      XK_f      }}, spawn, SHCMD("firefox") },
+	{ 1, {{MOD|SHIFT,      XK_p      }}, spawn, SHCMD("dmenu_xresources") },
+	{ 1, {{MOD|SHIFT,      XK_w      }}, spawn, SHCMD("feh --randomize --bg-fill $HOME/Imágenes/Wallpapers") },
+	{ 1, {{MOD|CTRL|SHIFT, XK_c      }}, reload_xres,    {0} },
 
-	{ MOD,            XK_Print,  spawn,          SHCMD("scrot '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
-	{ MOD|SHIFT,	  XK_Print,  spawn,          SHCMD("scrot -s '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
-	{ MOD|SHIFT,	  XK_e,      spawn,          SHCMD("emacsclient -c -a 'emacs'") },
-	{ MOD|SHIFT,	  XK_v,      spawn,          SHCMD("st -g 80x24+200+200 -e nvim") },
-	{ MOD|SHIFT,	  XK_r,      spawn,          SHCMD("st -g 80x24+200+200 -e ranger") },
-	{ MOD|SHIFT,	  XK_n,      spawn,          SHCMD("st -g 80x24+200+200 -e ncmpcpp") },
-	{ MOD|SHIFT,	  XK_f,      spawn,          SHCMD("firefox") },
-
-	{ MOD|SHIFT,      XK_p,      spawn,          SHCMD("dmenu_xresources") },
-
-	{ 0,AudioMute,               spawn,          SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle") },
-	{ 0,AudioLowerVolume,        spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%") },
-	{ 0,AudioRaiseVolume,        spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%") },
-	{ 0,AudioMicMute,            spawn,          SHCMD("pactl set-source-mute @DEFAULT_SOURCE@ toggle") },
-	{ 0,MonBrightnessDown,       spawn,          SHCMD("xbacklight -dec 5") },
-	{ 0,MonBrightnessUp,         spawn,          SHCMD("xbacklight -inc 5") },
-	{ 0,AudioPlay,               spawn,          SHCMD("mpc toggle") },
-	{ 0,AudioStop,               spawn,          SHCMD("mpc play") },
-	{ 0,AudioPrev,               spawn,          SHCMD("mpc prev") },
-	{ 0,AudioNext,               spawn,          SHCMD("mpc next") },
-
-	{ MOD|CTRL|SHIFT,            XK_c,           reload_xres,    {0} },
+	{ 2, {{MOD, XK_e}, {0, XK_e}}, spawn, SHCMD("emacsclient -c -a 'emacs'") },
+	{ 2, {{MOD, XK_e}, {0, XK_d}}, spawn, SHCMD("emacsclient -c -a 'emacs' --eval '(dired nil)'") },
 };
 
 /* button definitions */
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static Button buttons[] = {
 	/* click                event mask      button          function        argument */
+	{ ClkButton,            0,           Button1,        spawn,          {.v = dmenucmd} },
 	{ ClkTagBar,            MOD,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MOD,         Button3,        toggletag,      {0} },
 	{ ClkWinTitle,          0,           Button2,        zoom,           {0} },

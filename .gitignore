@@ -1,2 +1,4 @@
 # Ignora archivos tipo objeto
 *.o
+
+config.h
