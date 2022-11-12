@@ -12,6 +12,10 @@ DWM repository with the following patches applied.
 - Pertag
 - Savefloats
 - Status2d
+- Keychords
+- DWMC
+- Livereloadxresources
+- Statusbutton
 
 ## Requirements
 In order to build dwm you need the Xlib header files.
