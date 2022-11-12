@@ -5,17 +5,17 @@ dwm is an extremely fast, small, and dynamic window manager for X.
 DWM repository with the following patches applied.
 
 - Restartsig
-- Cool-autostart
-- Bar-height
-- Fullgaps
-- Moveresize
+- Cool-Autostart
+- Bar-Height
+- FullGaps
+- MoveResize
 - Pertag
-- Savefloats
+- SaveFloats
 - Status2d
 - Keychords
 - DWMC
-- Livereloadxresources
-- Statusbutton
+- LiveReloadXresources
+- StatusButton
 
 ## Requirements
 In order to build dwm you need the Xlib header files.
