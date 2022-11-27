@@ -2,11 +2,11 @@
 
 /* appearance */
  /* border pixel of windows */
-static const unsigned int borderpx  = 0;
+static unsigned int borderpx  = 0;
 /* gaps between windows */
-static const unsigned int gappx     = 20;
+static unsigned int gappx     = 20;
 /* snap pixel */
-static const unsigned int snap      = 32;
+static unsigned int snap      = 32;
 /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
 static const unsigned int systraypinning = 0;
 /* 0: systray in the right corner, >0: systray on left of status text */
@@ -18,17 +18,17 @@ static const int systraypinningfailfirst = 1;
 /* 0 means no systray */
 static const int showsystray        = 1;
 /* 0 means no bar */
-static const int showbar            = 1;
+static int showbar            = 1;
 /* 0 means bottom bar */
-static const int topbar = 1;
+static int topbar = 1;
 
 static const char buttonbar[] = "  ";
 /* 0 means that dwm will calculate bar height, >= 1 means dwm will user_bh as bar height */
 static const int user_bh            = 30;
 
-static char font[]                  = "SF Pro:style=Bold:size=10";
-static char dmenufont[]             = "Sarasa Term J:size=12";
-static const char *fonts[]          = { font, "Font Awesome 5 Free Solid:pixelsize=12", "siji:style=Medium:size=24"};
+static char font[]                  = "Sarasa Term CL:size=12";
+static char dmenufont[]             = "Sarasa Term CL:size=12";
+static const char *fonts[]          = { font, "Font Awesome 6 Free Solid:pixelsize=12", "siji:style=Medium:size=24"};
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";
@@ -53,7 +53,7 @@ static const char *const autostart[] = {
 };
 
 /* tagging */
-static const char *tags[] = { "main", "term",  "file",  "www", "edit",  "offi",  "chat",  "musc",  "vids"};
+static const char *tags[] = { "1", "2",  "3",  "4", "5",  "6",  "7",  "8",  "9"};
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -61,19 +61,20 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ "Firefox",  NULL,       NULL,       1 << 3,       0,           -1 },
+	{ "firefox",  NULL,       NULL,       1 << 3,       0,           -1 },
 	{ "TelegramDesktop",  NULL,NULL,      1 << 6,            1,           -1 },
 	{ "mpv",      NULL,       NULL,       0,            1,           -1 },
 	{ "PacketTracer" , NULL,  NULL,       0,            1,           -1 },
 	{ "Zathura",  NULL,       NULL,       0,            1,           -1 },
 	{ "Emacs",    NULL,       NULL,       1 << 4,       1,           -1 },
-	//	{ "org.wezfurlong.wezterm", NULL, NULL, 0, 1, -1},
+	{ "fzfWallpaper" , NULL, NULL,        0,            1,           -1 },
+	{ "ncmpcpp-ueberzug", NULL,NULL,      0,            1,           -1 },
 };
 
 /* layout(s) */
-static const float mfact     = 0.50; /* factor of master area size [0.05..0.95] */
-static const int nmaster     = 1;    /* number of clients in master area */
-static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
+static float mfact     = 0.50; /* factor of master area size [0.05..0.95] */
+ int nmaster     = 1;    /* number of clients in master area */
+ int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 
 static const Layout layouts[] = {
@@ -101,7 +102,7 @@ static const Layout layouts[] = {
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
 /* commands */
-static const char *termcmd[] = { "st", "-g", "98x24+200+200" , NULL };
+static const char *termcmd[] = { "st", "-g", "100x24+200+200" , NULL };
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run",
 				  "-fn", dmenufont,
@@ -207,14 +208,15 @@ static Keychord keychords[] = {
 	{ 1, {{MOD|SHIFT,      XK_Print  }}, spawn, SHCMD("scrot -s '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
 	{ 1, {{MOD|SHIFT,      XK_v      }}, spawn, SHCMD("st -g 80x24+200+200 -e nvim") },
 	{ 1, {{MOD|SHIFT,      XK_r      }}, spawn, SHCMD("st -g 80x24+200+200 -e ranger") },
-	{ 1, {{MOD|SHIFT,      XK_n      }}, spawn, SHCMD("st -g 80x24+200+200 -e ncmpcpp") },
+	{ 1, {{MOD|SHIFT,      XK_n      }}, spawn, SHCMD("st -f azukifontBi:size=11 -c ncmpcpp-ueberzug -g 137x30+1520+50 -e $HOME/.local/bin/ncmpcpp-ueberzug") },
 	{ 1, {{MOD|SHIFT,      XK_f      }}, spawn, SHCMD("firefox") },
 	{ 1, {{MOD|SHIFT,      XK_p      }}, spawn, SHCMD("dmenu_xresources") },
-	{ 1, {{MOD|SHIFT,      XK_w      }}, spawn, SHCMD("feh --randomize --bg-fill $HOME/Imágenes/Wallpapers") },
+	{ 1, {{MOD|SHIFT,      XK_w      }}, spawn, SHCMD("st -c fzfWallpaper -g 270x40+170+305 -e $HOME/.local/bin/fzfWallpaper") },
 	{ 1, {{MOD|CTRL|SHIFT, XK_c      }}, reload_xres,    {0} },
 
 	{ 2, {{MOD, XK_e}, {0, XK_e}}, spawn, SHCMD("emacsclient -c -a 'emacs'") },
 	{ 2, {{MOD, XK_e}, {0, XK_d}}, spawn, SHCMD("emacsclient -c -a 'emacs' --eval '(dired nil)'") },
+	{ 2, {{MOD, XK_e}, {0, XK_a}}, spawn, SHCMD("emacsclient -c -a 'emacs' --eval '(org-agenda nil \"a\")'") },
 };
 
 /* button definitions */
