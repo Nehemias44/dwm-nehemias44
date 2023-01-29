@@ -4,7 +4,7 @@
  /* border pixel of windows */
 static unsigned int borderpx  = 0;
 /* gaps between windows */
-static const unsigned int gappx     = 15;
+static const unsigned int gappx     = 20;
 /* snap pixel */
 static unsigned int snap      = 32;
 /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
@@ -29,7 +29,9 @@ static const int user_bh            = 30;
 
 static char font[]                  = "Sarasa Term J:size=12";
 static char dmenufont[]             = "Sarasa Term J:size=14";
-static const char *fonts[]          = { font, "Font Awesome 6 Free Solid:pixelsize=12", "siji:style=Medium:size=28", };
+static const char *fonts[]          = { font,
+					"Font Awesome 6 Free Solid:pixelsize=12",
+					"siji:style=Medium:size=28", };
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";
@@ -45,18 +47,23 @@ static const char *const autostart[] = {
 	"xset", "-b", NULL,
 	"xsetroot", "-cursor_name", "left_ptr", NULL,
 	"xbacklight", "-set", "45", NULL,
-	"xrdb", "-merge", "$HOME/.Xresources", NULL,	
+	"xrdb", "-merge", "$HOME/.Xresources", NULL,
 	"sh", "-c", "$HOME/.fehbg", NULL,
-	"picom", "--experimental-backends", NULL,	
+	"picom", "--experimental-backends", NULL,
 	"dwmstatus", NULL,
 	"conky", "-c", "$HOME/.config/conky/conkyrc", NULL,
 	"mpd", NULL,
-        "emacs", "--daemon", NULL,
+	"emacs", "--daemon", NULL,
 	NULL /* terminate */
 };
 
 /* tagging */
 static const char *tags[] = { "1", "2",  "3",  "4", "5",  "6",  "7",  "8",  "9"};
+
+static const unsigned int ulinepad	= 5;	/* horizontal padding between the underline and tag */
+static const unsigned int ulinestroke	= 2;	/* thickness / height of the underline */
+static const unsigned int ulinevoffset	= 0;	/* how far above the bottom of the bar the line should appear */
+static const int ulineall 		= 0;	/* 1 to show underline on all tags, 0 for just the active ones */
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -67,7 +74,8 @@ static const Rule rules[] = {
 	{ "Firefox",  NULL,       NULL,       1 << 3,       0,           -1 },
 	{ "eww-bar",  NULL,       NULL,       0,            1,           -1 },
 	{ "mpv",      NULL,       NULL,       0,            1,           -1 },
-	{ "Emacs",    NULL,       NULL,       1 << 4,       0,           -1 },
+	{ "Emacs",    NULL,       NULL,       1 << 4,       1,           -1 },
+	{ "ncmpcpp-ueberzug", NULL,NULL,      0,            1,           -1 },
 };
 
 /* layout(s) */
@@ -121,7 +129,7 @@ ResourcePref resources[] = {
               { "normbordercolor",    STRING,  &normbordercolor },
               { "normfgcolor",        STRING,  &normfgcolor },
               { "selbgcolor",         STRING,  &selbgcolor },
-	      { "selbordercolor",     STRING,  &selbordercolor },
+	          { "selbordercolor",     STRING,  &selbordercolor },
               { "selfgcolor",         STRING,  &selfgcolor },
               { "borderpx",           INTEGER, &borderpx },
               { "snap",               INTEGER, &snap },
@@ -203,10 +211,10 @@ static Keychord keychords[] = {
 	
 	{ 1, {{MOD|SHIFT,         XK_q}},      quit,           {0} },
 
-	{ 1, {{MOD,           XK_Print}},      spawn,          SHCMD("scrot '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
+	{ 1, {{MOD,           XK_Print}},  spawn,          SHCMD("scrot '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
 	{ 1, {{MOD|SHIFT,	  XK_Print}},  spawn,          SHCMD("scrot -s '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
 	{ 1, {{MOD|SHIFT,	  XK_r}},      spawn,          SHCMD("st -g 80x24+200+200 -e ranger") },
-	{ 1, {{MOD|SHIFT,	  XK_n}},      spawn,          SHCMD("st -g 80x24+200+200 -e ncmpcpp") },
+	{ 1, {{MOD|SHIFT,	  XK_n}},      spawn,          SHCMD(" st -c ncmpcpp-ueberzug -f azukifontB:size=11 -g 110x30+1072+50 -e ncmpcpp-ueberzug") },
 	{ 1, {{MOD|SHIFT,	  XK_f}},      spawn,          SHCMD("firefox") },
 
 	{ 1, {{MOD|SHIFT,         XK_p}},      spawn,          SHCMD("dmenu_xresources") },
@@ -221,6 +229,7 @@ static Keychord keychords[] = {
 	{ 1, {{0,AudioStop}},               spawn,          SHCMD("mpc stop") },
 	{ 1, {{0,AudioPrev}},               spawn,          SHCMD("mpc prev") },
 	{ 1, {{0,AudioNext}},               spawn,          SHCMD("mpc next") },
+	{ 1, {{MOD|SHIFT,XK_w}},            spawn,          SHCMD("st -c fzfWallpaper -g 270x40+170+305 -e $HOME/.local/bin/fzfWallpaper")},
 
 	{ 1, {{MOD|CTRL|SHIFT,            XK_c}},           reload_xres,    {0} },
 	{ 1, {{MOD|CTRL|SHIFT,            XK_q}},           quit,           {1} },
