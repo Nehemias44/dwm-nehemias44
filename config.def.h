@@ -116,8 +116,10 @@ static const char *dmenucmd[] = { "dmenu_run",
 				  "-nf", normfgcolor,
 				  "-sb", selfgcolor,
 				  "-sf", selbgcolor,
+				  "-p" , "RUN:",
+				  "-h", "30",
 				  NULL };
-static const char *termcmd[] = {"st", "-g", "80x24+200+200", NULL};
+static const char *termcmd[] = { "wezterm", "start", "--position", "main:20%,30%", NULL};
 
 /*
  * Xresources preferences to load at startup
@@ -129,7 +131,7 @@ ResourcePref resources[] = {
               { "normbordercolor",    STRING,  &normbordercolor },
               { "normfgcolor",        STRING,  &normfgcolor },
               { "selbgcolor",         STRING,  &selbgcolor },
-	          { "selbordercolor",     STRING,  &selbordercolor },
+	      { "selbordercolor",     STRING,  &selbordercolor },
               { "selfgcolor",         STRING,  &selfgcolor },
               { "borderpx",           INTEGER, &borderpx },
               { "snap",               INTEGER, &snap },
@@ -195,8 +197,8 @@ static Keychord keychords[] = {
 	 { 1, {{MOD,            XK_period}}, focusmon,       {.i = +1 } },
 	 { 1, {{MOD|SHIFT,      XK_comma}},  tagmon,         {.i = -1 } },
 	 { 1, {{MOD|SHIFT,      XK_period}}, tagmon,         {.i = +1 } },
-	 { 1, {{MOD,            XK_minus}},  setgaps,        {.i = -1 } },
-	 { 1, {{MOD,            XK_equal}},  setgaps,        {.i = +1 } },
+	 { 1, {{MOD|SHIFT,      XK_minus}},  setgaps,        {.i = -1 } },
+	 { 1, {{MOD|SHIFT,      XK_plus}},  setgaps,        {.i = +1 } },
 	 { 1, {{MOD|SHIFT,      XK_equal}},  setgaps,        {.i = 0  } },
 	
 	TAGKEYS(          XK_1,                      0)
@@ -211,13 +213,13 @@ static Keychord keychords[] = {
 	
 	{ 1, {{MOD|SHIFT,         XK_q}},      quit,           {0} },
 
-	{ 1, {{MOD,           XK_Print}},  spawn,          SHCMD("scrot '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
-	{ 1, {{MOD|SHIFT,	  XK_Print}},  spawn,          SHCMD("scrot -s '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
-	{ 1, {{MOD|SHIFT,	  XK_r}},      spawn,          SHCMD("st -g 80x24+200+200 -e ranger") },
-	{ 1, {{MOD|SHIFT,	  XK_n}},      spawn,          SHCMD(" st -c ncmpcpp-ueberzug -f azukifontB:size=11 -g 110x30+1072+50 -e ncmpcpp-ueberzug") },
-	{ 1, {{MOD|SHIFT,	  XK_f}},      spawn,          SHCMD("firefox") },
+	{ 1, {{MOD,           XK_Print}},  spawn,           SHCMD("scrot '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
+	{ 1, {{MOD|SHIFT,	  XK_Print}},  spawn,       SHCMD("scrot -s '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
+	{ 1, {{MOD|SHIFT,	  XK_r}},      spawn,       SHCMD("wezterm start ranger") },
+	{ 1, {{MOD|SHIFT,	  XK_n}},      spawn,       SHCMD("$HOME/.local/bin/myNcmpcpp") },
+	{ 1, {{MOD|SHIFT,	  XK_f}},      spawn,       SHCMD("firefox") },
 
-	{ 1, {{MOD|SHIFT,         XK_p}},      spawn,          SHCMD("dmenu_xresources") },
+	{ 1, {{MOD|SHIFT,         XK_p}},      spawn,       SHCMD("dmenu_xresources") },
 
 	{ 1, {{0,AudioMute}},               spawn,          SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle") },
 	{ 1, {{0,AudioLowerVolume}},        spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%") },
@@ -229,7 +231,7 @@ static Keychord keychords[] = {
 	{ 1, {{0,AudioStop}},               spawn,          SHCMD("mpc stop") },
 	{ 1, {{0,AudioPrev}},               spawn,          SHCMD("mpc prev") },
 	{ 1, {{0,AudioNext}},               spawn,          SHCMD("mpc next") },
-	{ 1, {{MOD|SHIFT,XK_w}},            spawn,          SHCMD("st -c fzfWallpaper -g 270x40+170+305 -e $HOME/.local/bin/fzfWallpaper")},
+	{ 1, {{MOD|SHIFT,XK_w}},            spawn,          SHCMD("wezterm start $HOME/.local/bin/fzfWallpaper")},
 
 	{ 1, {{MOD|CTRL|SHIFT,            XK_c}},           reload_xres,    {0} },
 	{ 1, {{MOD|CTRL|SHIFT,            XK_q}},           quit,           {1} },
