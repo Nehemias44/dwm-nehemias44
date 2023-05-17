@@ -219,7 +219,6 @@ static Keychord keychords[] = {
 	{ 1, {{MOD|SHIFT,	  XK_n}},      spawn,       SHCMD("$HOME/.local/bin/myNcmpcpp") },
 	{ 1, {{MOD|SHIFT,	  XK_f}},      spawn,       SHCMD("firefox") },
 
-	{ 1, {{MOD|SHIFT,         XK_p}},      spawn,       SHCMD("dmenu_xresources") },
 
 	{ 1, {{0,AudioMute}},               spawn,          SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle") },
 	{ 1, {{0,AudioLowerVolume}},        spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%") },
@@ -238,7 +237,10 @@ static Keychord keychords[] = {
 
 	{ 2, {{MOD, XK_e},            {0, XK_d}},           spawn,          SHCMD("emacsclient -c -a 'emacs' --e '(dired nil)'")},
 	{ 2, {{MOD, XK_e},            {0, XK_e}},           spawn,          SHCMD("emacsclient -c -a 'emacs'")},
-	{ 2, {{MOD, XK_e},            {0, XK_a}},           spawn,          SHCMD("emacsclient -c -a 'emacs' --e '(org-agenda nil \"a\")'")}
+	{ 2, {{MOD, XK_e},            {0, XK_a}},           spawn,          SHCMD("emacsclient -c -a 'emacs' --e '(org-agenda nil \"a\")'")},
+
+	{ 1, {{MOD|CTRL, XK_t}},                            spawn,          SHCMD("dmenu_xresources")},
+	{ 1, {{MOD|CTRL, XK_m}},                            spawn,          SHCMD("dmenu_mpc")}
 };
 
 /* button definitions */
