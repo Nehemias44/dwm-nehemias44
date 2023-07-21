@@ -48,14 +48,15 @@ static const char *const autostart[] = {
 	"xsetroot", "-cursor_name", "left_ptr", NULL,
 	"xbacklight", "-set", "45", NULL,
 	"xrdb", "-merge", "$HOME/.Xresources", NULL,
-	"sh", "-c", "$HOME/.fehbg", NULL,
-	"picom", "--experimental-backends", NULL,
+	"picom", NULL,
 	"dwmstatus", NULL,
+	"sh", "-c", "$HOME/.fehbg", NULL,
 	"conky", "-c", "$HOME/.config/conky/conkyrc", NULL,
 	"mpd", NULL,
 	"emacs", "--daemon", NULL,
 	NULL /* terminate */
 };
+
 
 /* tagging */
 static const char *tags[] = { "1", "2",  "3",  "4", "5",  "6",  "7",  "8",  "9"};
@@ -76,6 +77,7 @@ static const Rule rules[] = {
 	{ "mpv",      NULL,       NULL,       0,            1,           -1 },
 	{ "Emacs",    NULL,       NULL,       1 << 4,       1,           -1 },
 	{ "ncmpcpp-ueberzug", NULL,NULL,      0,            1,           -1 },
+	{ "Nsxiv",    NULL,       NULL,       0,            1,           -1 },
 };
 
 /* layout(s) */
@@ -119,7 +121,8 @@ static const char *dmenucmd[] = { "dmenu_run",
 				  "-p" , "RUN:",
 				  "-h", "30",
 				  NULL };
-static const char *termcmd[] = { "wezterm", "start", "--position", "main:20%,30%", NULL};
+// static const char *termcmd[] = { "wezterm", "start", "--position", "main:20%,30%", NULL};
+static const char *termcmd[] = { "wezterm", "start", "--position", "main:28%,24%", NULL};
 
 /*
  * Xresources preferences to load at startup
@@ -214,11 +217,10 @@ static Keychord keychords[] = {
 	{ 1, {{MOD|SHIFT,         XK_q}},      quit,           {0} },
 
 	{ 1, {{MOD,           XK_Print}},  spawn,           SHCMD("scrot '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
-	{ 1, {{MOD|SHIFT,	  XK_Print}},  spawn,       SHCMD("scrot -s '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
+	{ 1, {{MOD|SHIFT,	  XK_Print}},  spawn,       SHCMD("scrot -s -b '%Y-%m-%d_%H:%M_$wx$h.png' -e 'mv $f ~/Imágenes/Screenshots/'") },
 	{ 1, {{MOD|SHIFT,	  XK_r}},      spawn,       SHCMD("wezterm start ranger") },
 	{ 1, {{MOD|SHIFT,	  XK_n}},      spawn,       SHCMD("$HOME/.local/bin/myNcmpcpp") },
 	{ 1, {{MOD|SHIFT,	  XK_f}},      spawn,       SHCMD("firefox") },
-
 
 	{ 1, {{0,AudioMute}},               spawn,          SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle") },
 	{ 1, {{0,AudioLowerVolume}},        spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%") },
@@ -230,7 +232,7 @@ static Keychord keychords[] = {
 	{ 1, {{0,AudioStop}},               spawn,          SHCMD("mpc stop") },
 	{ 1, {{0,AudioPrev}},               spawn,          SHCMD("mpc prev") },
 	{ 1, {{0,AudioNext}},               spawn,          SHCMD("mpc next") },
-	{ 1, {{MOD|SHIFT,XK_w}},            spawn,          SHCMD("wezterm start $HOME/.local/bin/fzfWallpaper")},
+	{ 1, {{MOD|SHIFT,XK_w}},            spawn,          SHCMD("sxiv -g 1000x600+470+240 -t $HOME/Imágenes/Wallpapers/*")},
 
 	{ 1, {{MOD|CTRL|SHIFT,            XK_c}},           reload_xres,    {0} },
 	{ 1, {{MOD|CTRL|SHIFT,            XK_q}},           quit,           {1} },
