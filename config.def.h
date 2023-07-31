@@ -26,8 +26,8 @@ static const char buttonbar[] = "  ";
 /* 0 means that dwm will calculate bar height, >= 1 means dwm will user_bh as bar height */
 static const int user_bh            = 30;
 
-static char font[]                  = "Iosevka:size=12";
-static char dmenufont[]             = "Iosevka:size=12";
+static char font[]                  = "Sarasa Term J:size=12";
+static char dmenufont[]             = "Sarasa Term J:size=12";
 static const char *fonts[]          = { font, "Font Awesome 6 Free Solid:pixelsize=12", "siji:style=Medium:size=24"};
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
@@ -69,6 +69,7 @@ static const Rule rules[] = {
 	{ "Emacs",    NULL,       NULL,       1 << 4,       1,           -1 },
 	{ "Sxiv",     NULL,       NULL,        0,            1,           -1 },
 	{ "ncmpcpp-ueberzug", NULL,NULL,      0,            1,           -1 },
+	{ "Virt-manager", NULL,   NULL,       0,            1,           -1},
 };
 
 /* layout(s) */
