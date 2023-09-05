@@ -46,7 +46,7 @@ static char *colors[][3] = {
 static const char *const autostart[] = {
 	"xset", "-b", NULL,
 	"xsetroot", "-cursor_name", "left_ptr", NULL,
-	"xbacklight", "-set", "45", NULL,
+	"xbacklight", "-set", "55", NULL,
 	"xrdb", "-merge", "$HOME/.Xresources", NULL,
 	"picom", NULL,
 	"dwmstatus", NULL,
@@ -78,6 +78,7 @@ static const Rule rules[] = {
 	{ "Emacs",    NULL,       NULL,       1 << 4,       1,           -1 },
 	{ "ncmpcpp-ueberzug", NULL,NULL,      0,            1,           -1 },
 	{ "Nsxiv",    NULL,       NULL,       0,            1,           -1 },
+	{ "Surf",     NULL,       NULL,       0,            1,           -1 },
 };
 
 /* layout(s) */
@@ -201,7 +202,7 @@ static Keychord keychords[] = {
 	 { 1, {{MOD|SHIFT,      XK_comma}},  tagmon,         {.i = -1 } },
 	 { 1, {{MOD|SHIFT,      XK_period}}, tagmon,         {.i = +1 } },
 	 { 1, {{MOD|SHIFT,      XK_minus}},  setgaps,        {.i = -1 } },
-	 { 1, {{MOD|SHIFT,      XK_plus}},  setgaps,        {.i = +1 } },
+	 { 1, {{MOD|SHIFT,      XK_plus}},   setgaps,        {.i = +1 } },
 	 { 1, {{MOD|SHIFT,      XK_equal}},  setgaps,        {.i = 0  } },
 	
 	TAGKEYS(          XK_1,                      0)
@@ -233,7 +234,8 @@ static Keychord keychords[] = {
 	{ 1, {{0,AudioPrev}},               spawn,          SHCMD("mpc prev") },
 	{ 1, {{0,AudioNext}},               spawn,          SHCMD("mpc next") },
 	{ 1, {{MOD|SHIFT,XK_w}},            spawn,          SHCMD("sxiv -g 1000x600+470+240 -t $HOME/Imágenes/Wallpapers/*")},
-
+	{ 1, {{MOD|SHIFT,XK_s}},            spawn,          SHCMD("sxiv -g 1000x600+470+240 -t $HOME/Imágenes/Screenshotsk/*")},
+	
 	{ 1, {{MOD|CTRL|SHIFT,            XK_c}},           reload_xres,    {0} },
 	{ 1, {{MOD|CTRL|SHIFT,            XK_q}},           quit,           {1} },
 
